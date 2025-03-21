@@ -1,0 +1,12 @@
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --body-back: #333;
+    --body-color: #ccc;
+    --focus-color: hsla(0, 0%, 80%, 0.3);
+    --head-color: #333;
+    --text-color: #333;
+    --option-color: #000;
+  }
+}
+

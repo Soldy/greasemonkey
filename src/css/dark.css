@@ -1,0 +1,19 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    --body-back: #333;
+    --body-color: #222;
+    --focus-color: hsla(0, 0%, 80%, 0.3);
+    --focus-color: #444;
+    --head-color: #bbb;
+    --text-color: #aaa;
+    --option-color: #000;
+  }
+}
+body[data-theme="dark"] {
+    --body-back: #333;
+    --body-color: #222;
+    --focus-color: #444;
+    --head-color: #bbb;
+    --text-color: #aaa;
+    --option-color: #000;
+}
