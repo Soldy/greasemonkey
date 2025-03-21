@@ -1,5 +1,5 @@
 html, body {
-  background: lightgrey;
+  background: var(--body-back);
   height: 100%;
   margin: 0;
   overflow: hidden;
@@ -31,7 +31,7 @@ body #modal-splash {
   width: 30em;
 }
 #modal header {
-  border-bottom: 1px solid #CCC;
+  border-bottom: 1px solid var(--body-color);
   font-size: 25px;
   margin: 0 0 10px 0;
   padding-bottom: 10px;
@@ -64,7 +64,7 @@ body #modal-splash {
   -moz-user-select: none;
 }
 #tabs .tab.active {
-  background: white;
+  background: var(--head-color);
 }
 #tabs .tab.dirty::after {
   content: "*";
@@ -81,7 +81,7 @@ body #modal-splash {
   -moz-user-select: none;
 }
 .command-item:hover {
-  background: #e5e5e5;
+  background: var(--focus-color);
 }
 
 body, #editor, #editor textarea {
@@ -92,7 +92,7 @@ body, #editor, #editor textarea {
 }
 #editor {
   height: 0;
-  background: white;
+  background: var(--body-color);
 }
 .CodeMirror {
   height: 100% !important;
