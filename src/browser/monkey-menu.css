@@ -112,7 +112,7 @@ section h2 {
 }
 
 section h2 a {
-  color: black;
+  color: var(--text-color);
   float: right;
 }
 
@@ -147,6 +147,7 @@ menuitem {
   position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-color);
 }
 menuitem:focus {
   background-color: var(--focus-color);
@@ -189,7 +190,7 @@ menuitem.user-script {
 }
 
 menu heading {
-  color: #333;
+  color: var(--text-color);
   font-style: italic;
   padding-left: 21px;
 }
@@ -228,7 +229,7 @@ section.user-script-options input[type=checkbox] {
 /******************************** OPTIONS ************************************/
 
 section.options .explain a {
-  color: black;
+  color: var(--text-color);
   float: right;
 }
 
