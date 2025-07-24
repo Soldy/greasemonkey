@@ -1,4 +1,4 @@
-module.exports = function(config) {
+module.exports = async function(config) {
   config.set({
     files: [
       './node_modules/sinon-chrome/bundle/sinon-chrome-webextensions.min.js',
@@ -28,17 +28,23 @@ module.exports = function(config) {
     colors: true,
     logLevel: config.LOG_WARN,
     autoWatch: true,
-
-    browsers: ['FirefoxHeadless'],
+    browsers: ['FirefoxWithoutGPU'],
+    browserSocketTimeout: 200000,
     // https://github.com/karma-runner/karma-firefox-launcher/issues/76
     customLaunchers: {
-      FirefoxHeadless: {
+      FirefoxWithoutGPU: {
         base: 'Firefox',
-        flags: [ '-headless' ],
+        prefs: {
+           'layers.acceleration.disabled': true
+        },
+        flags: [
+          '-headless'
+
+        ],
       },
     },
 
     singleRun: true,
     concurrency: Infinity
-  })
+  });
 };
