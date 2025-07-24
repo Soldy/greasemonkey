@@ -51,6 +51,135 @@ function prepDefaults(details) {
   return details;
 }
 
+const _MonkeyBase = class{
+    read(input_, def_){
+        const lines = input_.split(/\r?\n/);
+        const raw = this.#getRaw(lines);
+        return this.#dataMine(raw, def_);
+
+    };
+    check(line){
+        return _firstLineCheck(line);
+    };
+    getRaw(lines){
+        return _getRaw(lines);
+    };
+    dataMine(lines){
+        return _dataMine(lines);
+    };
+    #firstLineCheck = (line)=>{
+        line = line.replace(/^\s*/gm, '');
+        if(
+            (line.slice(0, 2) === '//')&&
+             (line.toLowerCase().indexOf('==userscript==') > 1)
+        )
+            return true;
+        return false;
+    };
+    #lastLineCheck = (line)=>{
+        line = line.replace(/^\s*/gm, '');
+        if(
+            (line.slice(0, 2) === '//')&&
+             (line.toLowerCase().indexOf('==/userscript==') > 1)
+        )
+            return true;
+        return false;
+    };
+    #dict = {};
+    #urls = {
+        'require'      : 'requireUrls',
+        'resource'     : 'resourceUrls',
+        'icon'         : 'iconUrl'
+    }
+    #url(){
+
+    }
+    #local(){
+
+    }
+    #rev(name_){
+        console.log(name_);
+        console.log(name_.toLowerCase());
+         if (typeof this.#dict[
+             name_.toLowerCase()
+           ] === 'undefined'
+         )
+             return name_;
+         return this.#dict[name_.toLowerCase()];
+    };
+    #dataMine = function(lines, def_){
+        for (let i in def_)
+            this.#dict[i.toLowerCase()] = i;
+        const out = def_;
+        for (let line of lines){
+            if(line.slice(0, 2) !== '//')
+                continue;
+            let cleaned = line.replace('//', '')
+                .replace(/^\s*/gm, '');
+            if(cleaned.slice(0, 1) !== '@')
+                continue;
+            cleaned = cleaned.replace('@', '').trim();
+            if(cleaned.length < 2)
+               continue;
+            let name = (
+              cleaned.slice(0, cleaned.indexOf(' '))
+            );
+            console.log(name);
+            let value = cleaned.replace(name, '')
+                .replace(/^\s*/gm, '');
+            let sname = name.split(':');
+            if(sname.length > 1 ){
+               if(typeof out.locales[sname[1]] === 'undefined') 
+                 out.locales[sname[1]] = {};
+                 out.locales[sname[1]][sname[0]] = value;
+                 continue;
+            };
+            name = this.#rev(name);
+            console.log(value);
+            console.log(cleaned);
+            if(typeof out[name] === 'undefined')
+                out[name] = [];
+            if(value === 'true' || value === '' || typeof value == 'undefined'){
+                out[name] = true;
+                continue;
+            }
+            if (typeof out[name] === 'boolean'){
+                out[name] = true;
+                continue;
+            }
+            if (Array.isArray(out[name])){
+                    out[name].push(value);
+                    continue;
+            }
+            if (typeof out[name] === 'string' || out[name] == null ){
+                out[name] = value;
+                continue;
+            }
+            if (typeof out[name] === 'object'){
+                const svalue = value.split(' ');
+                out[name][svalue[0]] = svalue[1];
+                continue;
+            }
+        }
+        console.log(out);
+        return out;
+    };
+    #getRaw(lines){
+        let out = [];
+        let started = false;
+        for(let i of lines)
+            if(started){
+                out.push(i);
+                if(this.#lastLineCheck(i))
+                    return out;
+            }else if(this.#firstLineCheck(i)){
+                out.push(i);
+                started = true;
+            }
+        return [];
+    };
+};
+
 
 /** Parse the source of a script; produce object of data. */
 window.parseUserScript = function(content, url, failWhenMissing=false) {
@@ -59,7 +188,8 @@ window.parseUserScript = function(content, url, failWhenMissing=false) {
   }
 
   // Populate with defaults in case the script specifies no value.
-  const details = {
+  const miner = new _MonkeyBase();
+  const details = miner.read(content, {
     'downloadUrl': url,
     'excludes': [],
     'grants': [],
@@ -73,91 +203,7 @@ window.parseUserScript = function(content, url, failWhenMissing=false) {
     'requireUrls': [],
     'resourceUrls': {},
     'runAt': 'end'
-  };
-
-  let meta = extractMeta(content).match(/.+/g);
-  if (!meta) {
-    if (failWhenMissing) {
-      throw new Error('Could not parse, no meta.');
-    } else {
-      return prepDefaults(details);
-    }
-  }
-
-  for (let i = 0, metaLine = ''; metaLine = meta[i]; i++) {
-    let data;
-    try {
-      data = parseMetaLine(metaLine.replace(/\s+$/, ''));
-    } catch (e) {
-      // Ignore invalid/unsupported meta lines.
-      continue;
-    }
-
-    switch (data.keyword) {
-    case 'noframes':
-      details.noFrames = true;
-      break;
-    case 'homepageURL':
-      details.homePageUrl = data.value;
-      break;
-    case 'namespace':
-    case 'version':
-      details[data.keyword] = data.value;
-      break;
-    case 'run-at':
-      details.runAt = data.value.replace('document-', '');
-      // TODO: Assert/normalize to supported value.
-      break;
-    case 'grant':
-      if (data.value == 'none' || SUPPORTED_APIS.has(data.value)) {
-        details.grants.push(data.value);
-      }
-      break;
-
-    case 'description':
-    case 'name':
-      let locale = data.locale;
-      if (locale) {
-        if (!details.locales[locale]) details.locales[locale] = {};
-        details.locales[locale][data.keyword] = data.value;
-      } else {
-        details[data.keyword] = data.value;
-      }
-      break;
-
-    case 'exclude':
-      details.excludes.push(data.value);
-      break;
-    case 'include':
-      details.includes.push(data.value);
-      break;
-    case 'match':
-      try {
-        new MatchPattern(data.value);
-        details.matches.push(data.value);
-      } catch (e) {
-        throw new Error(
-            _('ignoring_MATCH_because_REASON', data.value, e));
-      }
-      break;
-
-    case 'icon':
-      details.iconUrl = safeUrl(data.value, url).toString();
-      break;
-    case 'require':
-      details.requireUrls.push( safeUrl(data.value, url).toString() );
-      break;
-    case 'resource':
-      let resourceName = data.value1;
-      let resourceUrl = data.value2;
-      if (resourceName in details.resourceUrls) {
-        throw new Error(_('duplicate_resource_NAME', resourceName));
-      }
-      details.resourceUrls[resourceName] = safeUrl(resourceUrl, url).toString();
-      break;
-    }
-  }
-
+  });
   return prepDefaults(details);
 }
 
