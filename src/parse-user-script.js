@@ -52,10 +52,12 @@ function prepDefaults(details) {
 }
 
 const _MonkeyBase = class{
-    read(input_, def_){
+    read(input_, url_){
         const lines = input_.split(/\r?\n/);
-        const raw = this.#getRaw(lines);
-        return this.#dataMine(raw, def_);
+        this.#raw = this.#getRaw(lines);
+        this.#url = url_;
+        this.#dataInit();
+        return this.#dataMine();
 
     };
     check(line){
@@ -67,6 +69,32 @@ const _MonkeyBase = class{
     dataMine(lines){
         return _dataMine(lines);
     };
+    #data_inited = false;
+    #duplicated = {};
+    #details(){
+        return {
+          'downloadUrl': this.#url,
+          'excludes': [],
+          'grants': [],
+          'homePageUrl': null,
+          'includes': [],
+          'locales': {},
+          'matches': [],
+          'name':this.#url && nameFromUrl(this.#url) || 'Unnamed Script',
+          'namespace': this.#url && new URL(this.#url).host || null,
+          'noFrames': false,
+          'requireUrls': [],
+          'resourceUrls': {},
+          'runAt': 'end'
+        };
+    };
+    #data = {};
+    #dataInit = function(){
+        if(this.#data_inited)
+            return;
+        this.#data_inited = true;
+        this.#data = this.#details();
+    };
     #firstLineCheck = (line)=>{
         line = line.replace(/^\s*/gm, '');
         if(
@@ -75,6 +103,20 @@ const _MonkeyBase = class{
         )
             return true;
         return false;
+    };
+    #duplicator = function(name_, file_){
+        const index = file_.lastIndexOf(".");
+        const arr = file_.split('');
+        if(typeof this.#duplicated[name_] === 'undefined')
+           this.#duplicated[name_] = {};
+        if(typeof this.#duplicated[name_][file_] === 'undefined')
+           this.#duplicated[name_][file_] = 1;
+        this.#duplicated[name_][file_]++; 
+        const extra = (
+          '.'+
+          this.#duplicated[name_][file_].toString()
+        );
+        return (arr.splice(index,0,extra)).join();
     };
     #lastLineCheck = (line)=>{
         line = line.replace(/^\s*/gm, '');
@@ -85,33 +127,36 @@ const _MonkeyBase = class{
             return true;
         return false;
     };
+    #url = '';
+    #raw = [];
     #dict = {};
+    #dictCache(){
+        for (let i in this.#details(this.#url))
+            this.#dict[i.toLowerCase()] = i;
+    }
     #urls = {
         'require'      : 'requireUrls',
+        'resources'    : 'resourceUrls',
         'resource'     : 'resourceUrls',
         'icon'         : 'iconUrl'
-    }
-    #url(){
-
-    }
+    };
     #local(){
-
-    }
+      
+    } 
     #rev(name_){
-        console.log(name_);
-        console.log(name_.toLowerCase());
-         if (typeof this.#dict[
-             name_.toLowerCase()
-           ] === 'undefined'
+          if (typeof this.#dict[
+              name_.toLowerCase()
+            ] === 'undefined'
          )
              return name_;
          return this.#dict[name_.toLowerCase()];
     };
-    #dataMine = function(lines, def_){
-        for (let i in def_)
-            this.#dict[i.toLowerCase()] = i;
-        const out = def_;
-        for (let line of lines){
+
+    #dataMine = function(){
+        this.#dictCache();
+        for (let line of this.#raw){
+            let sname = [];
+            let svalue = [];
             if(line.slice(0, 2) !== '//')
                 continue;
             let cleaned = line.replace('//', '')
@@ -124,45 +169,58 @@ const _MonkeyBase = class{
             let name = (
               cleaned.slice(0, cleaned.indexOf(' '))
             );
-            console.log(name);
             let value = cleaned.replace(name, '')
                 .replace(/^\s*/gm, '');
-            let sname = name.split(':');
+            sname = name.split(':');
             if(sname.length > 1 ){
-               if(typeof out.locales[sname[1]] === 'undefined') 
-                 out.locales[sname[1]] = {};
-                 out.locales[sname[1]][sname[0]] = value;
+               if(typeof this.#data.locales[sname[1]] === 'undefined') 
+                 this.#data.locales[sname[1]] = {};
+                 this.#data.locales[sname[1]][sname[0]] = value;
                  continue;
             };
+            svalue = value.split(' ');
+            if(svalue.length > 1 ){
+                if(typeof this.#data[name] === 'undefined')
+                    this.#data[name] = {};
+                if (svalue[0] in this.#data[name]) {
+                   throw new Error(
+                      _('duplicate_resource_NAME', svalue[0])
+                    );
+                }
+                if(typeof this.#urls[name] !== 'undefined' )
+                   name  = this.#urls[name].toString();
+                this.#data[name][svalue[0]] = safeUrl(svalue[1], this.#url).toString();
+                continue;
+            }
+            if(typeof this.#urls[name] !== 'undefined' ){
+              name  = this.#urls[name].toString();
+              value = safeUrl(value, this.#url).toString();
+            }
             name = this.#rev(name);
-            console.log(value);
-            console.log(cleaned);
-            if(typeof out[name] === 'undefined')
-                out[name] = [];
+            if(typeof this.#data[name] === 'undefined')
+                this.#data[name] = [];
             if(value === 'true' || value === '' || typeof value == 'undefined'){
-                out[name] = true;
+                this.#data[name] = true;
                 continue;
             }
-            if (typeof out[name] === 'boolean'){
-                out[name] = true;
+            if (typeof this.#data[name] === 'boolean'){
+                this.#data[name] = true;
                 continue;
             }
-            if (Array.isArray(out[name])){
-                    out[name].push(value);
-                    continue;
-            }
-            if (typeof out[name] === 'string' || out[name] == null ){
-                out[name] = value;
+            if (Array.isArray(this.#data[name])){
+                this.#data[name].push(value);
                 continue;
             }
-            if (typeof out[name] === 'object'){
-                const svalue = value.split(' ');
-                out[name][svalue[0]] = svalue[1];
+            if (typeof this.#data[name] === 'string' || this.#data[name] == null ){
+                this.#data[name] = value;
+                continue;
+            }
+            if (typeof this.#data[name] === 'object'){
+                this.#data[name][svalue[0]] = svalue[1];
                 continue;
             }
         }
-        console.log(out);
-        return out;
+        return this.#data;
     };
     #getRaw(lines){
         let out = [];
@@ -189,21 +247,7 @@ window.parseUserScript = function(content, url, failWhenMissing=false) {
 
   // Populate with defaults in case the script specifies no value.
   const miner = new _MonkeyBase();
-  const details = miner.read(content, {
-    'downloadUrl': url,
-    'excludes': [],
-    'grants': [],
-    'homePageUrl': null,
-    'includes': [],
-    'locales': {},
-    'matches': [],
-    'name': url && nameFromUrl(url) || 'Unnamed Script',
-    'namespace': url && new URL(url).host || null,
-    'noFrames': false,
-    'requireUrls': [],
-    'resourceUrls': {},
-    'runAt': 'end'
-  });
+  const details = miner.read(content, url);
   return prepDefaults(details);
 }
 
