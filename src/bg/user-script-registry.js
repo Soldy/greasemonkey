@@ -15,7 +15,7 @@ let userScriptsReady;
 
 let userScripts = {};
 let userScriptsReadyResolve;
-userScriptsReady = new Promise((resolve) => userScriptsReadyResolve = resolve);
+userScriptsReady = new Promise(function(resolve){ userScriptsReadyResolve = resolve});
 
 const dbName = 'greasemonkey';
 const dbVersion = 1;
@@ -143,7 +143,7 @@ async function loadUserScripts() {
     saveDetails.forEach(details => {
       userScripts[details.uuid] = new EditableUserScript(details);
     });
-    userScriptsReadyResolve();
+    userScriptsReadyResolve(true);
   }).catch(err => {
     console.error('Failed to load user scripts:', err.message || err.name);
   });

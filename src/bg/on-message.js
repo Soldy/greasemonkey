@@ -9,7 +9,7 @@ and passes all arguments on to that callback.
 (function() {
 const myPrefix = chrome.runtime.getURL('');
 
-chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function(message, sender, sendResponse) {
   if (!message.name) {
     console.error('Background received message without name!', message, sender);
     return;
@@ -33,7 +33,8 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 
   (async () => {
     // Block until user scripts have been loaded.
-    await userScriptsReady;
+//    await userScriptsReady;
+//    console.log(await userScriptsReady);
 
     let result = cb(message, sender, sendResponse);
     if (result instanceof Promise) {
