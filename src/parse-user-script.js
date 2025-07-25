@@ -63,6 +63,9 @@ const _MonkeyBase = class{
     check(line){
         return _firstLineCheck(line);
     };
+    lint(line_){
+        return this.#line(line_)
+    };
     getRaw(lines){
         return _getRaw(lines);
     };
@@ -151,75 +154,79 @@ const _MonkeyBase = class{
              return name_;
          return this.#dict[name_.toLowerCase()];
     };
+    #line = function(line_){
+        let sname = [];
+        let svalue = [];
+        if(line_.slice(0, 2) !== '//')
+            return false;
+        let cleaned = line_.replace('//', '')
+            .replace(/^\s*/gm, '');
+        if(cleaned.slice(0, 1) !== '@')
+           return false;
+        cleaned = cleaned.replace('@', '').trim();
+        if(cleaned.length < 2)
+           return false;
+        let name = (
+          cleaned.slice(0, cleaned.indexOf(' '))
+        );
+        let value = cleaned.replace(name, '')
+            .replace(/^\s*/gm, '');
+        sname = name.split(':');
+        if(sname.length > 1 ){
+           if(typeof this.#data.locales[sname[1]] === 'undefined')
+               this.#data.locales[sname[1]] = {};
+           this.#data.locales[sname[1]][sname[0]] = value;
+           return true;
+        };
+        svalue = value.split(' ');
+        if(svalue.length > 1 ){
+            if(typeof this.#data[name] === 'undefined')
+                this.#data[name] = {};
+            if (svalue[0] in this.#data[name]) {
+               throw new Error(
+                  _('duplicate_resource_NAME', svalue[0])
+                );
+            }
+            if(typeof this.#urls[name] !== 'undefined' )
+               name  = this.#urls[name].toString();
+            this.#data[name][svalue[0]] = safeUrl(svalue[1], this.#url).toString();
+            return true;
+        }
+        if(typeof this.#urls[name] !== 'undefined' ){
+          name  = this.#urls[name].toString();
+          value = safeUrl(value, this.#url).toString();
+        }
+        name = this.#rev(name);
+        if(typeof this.#data[name] === 'undefined')
+            this.#data[name] = [];
+        if(value === 'true' || value === '' || typeof value == 'undefined'){
+            this.#data[name] = true;
+            return true;
+        }
+        if (typeof this.#data[name] === 'boolean'){
+            this.#data[name] = true;
+            return true;
+        }
+        if (Array.isArray(this.#data[name])){
+            this.#data[name].push(value);
+            return true;
+        }
+        if (typeof this.#data[name] === 'string' || this.#data[name] == null ){
+            this.#data[name] = value;
+            return true;
+        }
+        if (typeof this.#data[name] === 'object'){
+            this.#data[name][svalue[0]] = svalue[1];
+            return true;
+        }
+        return false;
 
+
+    };
     #dataMine = function(){
         this.#dictCache();
-        for (let line of this.#raw){
-            let sname = [];
-            let svalue = [];
-            if(line.slice(0, 2) !== '//')
-                continue;
-            let cleaned = line.replace('//', '')
-                .replace(/^\s*/gm, '');
-            if(cleaned.slice(0, 1) !== '@')
-                continue;
-            cleaned = cleaned.replace('@', '').trim();
-            if(cleaned.length < 2)
-               continue;
-            let name = (
-              cleaned.slice(0, cleaned.indexOf(' '))
-            );
-            let value = cleaned.replace(name, '')
-                .replace(/^\s*/gm, '');
-            sname = name.split(':');
-            if(sname.length > 1 ){
-               if(typeof this.#data.locales[sname[1]] === 'undefined') 
-                 this.#data.locales[sname[1]] = {};
-                 this.#data.locales[sname[1]][sname[0]] = value;
-                 continue;
-            };
-            svalue = value.split(' ');
-            if(svalue.length > 1 ){
-                if(typeof this.#data[name] === 'undefined')
-                    this.#data[name] = {};
-                if (svalue[0] in this.#data[name]) {
-                   throw new Error(
-                      _('duplicate_resource_NAME', svalue[0])
-                    );
-                }
-                if(typeof this.#urls[name] !== 'undefined' )
-                   name  = this.#urls[name].toString();
-                this.#data[name][svalue[0]] = safeUrl(svalue[1], this.#url).toString();
-                continue;
-            }
-            if(typeof this.#urls[name] !== 'undefined' ){
-              name  = this.#urls[name].toString();
-              value = safeUrl(value, this.#url).toString();
-            }
-            name = this.#rev(name);
-            if(typeof this.#data[name] === 'undefined')
-                this.#data[name] = [];
-            if(value === 'true' || value === '' || typeof value == 'undefined'){
-                this.#data[name] = true;
-                continue;
-            }
-            if (typeof this.#data[name] === 'boolean'){
-                this.#data[name] = true;
-                continue;
-            }
-            if (Array.isArray(this.#data[name])){
-                this.#data[name].push(value);
-                continue;
-            }
-            if (typeof this.#data[name] === 'string' || this.#data[name] == null ){
-                this.#data[name] = value;
-                continue;
-            }
-            if (typeof this.#data[name] === 'object'){
-                this.#data[name][svalue[0]] = svalue[1];
-                continue;
-            }
-        }
+        for (let line of this.#raw)
+            this.#line(line);
         return this.#data;
     };
     #getRaw(lines){
