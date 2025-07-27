@@ -4128,37 +4128,12 @@ for (const [name, as] of aliases) {
   assert[as] = assert[name];
 }
 
-// lib/chai.js
-var used = [];
-function use(fn) {
-  const exports = {
-    use,
-    AssertionError,
-    util: utils_exports,
-    config,
-    expect,
-    assert,
-    Assertion,
-    ...should_exports
-  };
-  if (!~used.indexOf(fn)) {
-    fn(exports, utils_exports);
-    used.push(fn);
-  }
-  return exports;
-}
-__name(use, "use");
-export {
-  Assertion,
-  AssertionError,
-  Should,
+const chai = {
   assert,
-  config,
-  expect,
-  should,
-  use,
-  utils_exports as util
-};
+  expect
+}
+window.chai = chai;
+
 /*!
  * Chai - flag utility
  * Copyright(c) 2012-2014 Jake Luer <jake@alogicalparadox.com>
