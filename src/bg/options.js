@@ -5,28 +5,29 @@ of Greasemonkey.
 */
 
 // Private implementation.
-(function() {
+(async function() {
 
-let gIsEnabled = true;
-chrome.storage.local.get('globalEnabled', v => {
-  gIsEnabled = v['globalEnabled'];
-  if ('undefined' == typeof gIsEnabled) gIsEnabled = true;
-  setIcon();
-});
+/**
+ * A simplified storage layer for asynchronous operations,
+ * while regarding to the DRY principle.
+ *
+ * @param {string}
+ * @param {any}
+ * @async
+**/
+const chromeGet = async function (key_, default_){
+  return await (new Promise((resolve)=>{
+    chrome.storage.local.get(key_, (v)=> {
+      if (typeof v[key_] === 'undefined')
+        resolve(default_);
+      resolve(v);
+    });
+  }));
+};
 
-let gGlobalExcludes = [];
-chrome.storage.local.get('globalExcludes', v => {
-  let str = v['globalExcludes'];
-  if ('undefined' != typeof str) {
-    gGlobalExcludes = str.split('\n');
-  }
-});
-
-let gUseCodeMirror = true;
-chrome.storage.local.get('useCodeMirror', v => {
-  gUseCodeMirror = v['useCodeMirror'];
-  if ('undefined' == typeof gUseCodeMirror) gUseCodeMirror = true;
-});
+let gIsEnabled = await chromeGet('globalEnabled', true);
+let gUseCodeMirror = await chromeGet('useCodeMirror', true);
+let gGlobalExcludes = (await chromeGet('globalExcludes', '')).split('/n');
 
 function getGlobalEnabled() {
   return !!gIsEnabled;
