@@ -160,9 +160,11 @@ let createDoc;
         editorElem,
         // TODO: Make appropriate options user-configurable.
         {
-          'tabSize': 2,
-          'lineNumbers': true,
-          'extraKeys': isMacKeymap ? macKeymap : pcKeymap,
+          'tabSize'     : options.codeMirrorTabSize,
+          'lineNumbers' : options.codeMirrorLineNumber,
+          'extraKeys'   : isMacKeymap ? macKeymap : pcKeymap,
+          'theme'       : options.codeMirrorTheme,
+          'keyMap'      : options.codeMirrorKeyMap
         });
 
     CodeMirror.commands.save = onSave;

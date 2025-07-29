@@ -29,6 +29,11 @@ let gIsEnabled = await chromeGet('globalEnabled', true);
 let gUseCodeMirror = await chromeGet('useCodeMirror', true);
 let gGlobalExcludes = (await chromeGet('globalExcludes', '')).split('/n');
 
+let gCodeMirrorTheme = await chromeGet('codeMirrorTheme', 'default');
+let gCodeMirrorKeyMap = await chromeGet('codeMirrorKeyMap', 'default');
+let gCodeMirrorLineNumbers = await chromeGet('codeMirrorLineNumber', true);
+let gCodeMirrorTabSize = await chromeGet('codeMirrorTabSize', 2);
+
 function getGlobalEnabled() {
   return !!gIsEnabled;
 }
@@ -105,8 +110,12 @@ window.onEnabledToggle = onEnabledToggle;
 
 function onOptionsLoad(message, sender, sendResponse) {
   let options = {
-    'excludes': gGlobalExcludes.join('\n'),
-    'useCodeMirror': gUseCodeMirror,
+    'excludes'         : gGlobalExcludes.join('\n'),
+    'useCodeMirror'    : gUseCodeMirror,
+    'codeMirrorTheme'  : gCodeMirrorTheme,
+    'codeMirrorKeyMap' : gCodeMirrorKeyMap,
+    'codeMirrorTabSize': gCodeMirrorTabSize,
+    'codeMirrorLineNumbers': gCodeMirrorLineNumber
   };
   sendResponse(options);
 }
@@ -116,12 +125,20 @@ window.onOptionsLoad = onOptionsLoad;
 function onOptionsSave(message, sender, sendResponse) {
   chrome.storage.local.set(
       {
-        'globalExcludes': message.excludes,
-        'useCodeMirror': message.useCodeMirror,
+        'globalExcludes'   : message.excludes,
+        'useCodeMirror'    : message.useCodeMirror,
+        'codeMirrorTheme'  : message.codeMirrorTheme,
+        'codeMirrorKeyMap' : message.codeMirrorKeyMap,
+        'codeMirrorTabSize': message.codeMirrorTabSize,
+        'codeMirrorLineNumbers': message.codeMirrorLineNumber
         },
       logUnhandledError);
-  gGlobalExcludes = message.excludes.split('\n');
-  gUseCodeMirror = message.useCodeMirror;
+  gGlobalExcludes        = message.excludes.split('\n');
+  gUseCodeMirror         = message.useCodeMirror;
+  gCodeMirrorTheme       = message.codeMirrorTheme,
+  gCodeMirrorKeyMap      = message.codeMirrorKeyMap,
+  gCodeMirrorLineNumbers = message.codeMirrorLineNumbers,
+  gCodeMirrorTabSize     = message.codeMirrorTabSize
   sendResponse();
 }
 window.onOptionsSave = onOptionsSave;
