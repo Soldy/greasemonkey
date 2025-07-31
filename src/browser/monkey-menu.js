@@ -204,6 +204,12 @@ function onTransitionStart() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+function openNewTab(url_){
+  const url = chrome.runtime.getURL(url_);
+  chrome.tabs.create({'active': true, 'url': url});
+  window.close();
+};
+
 // Either by mouse click or <Enter> key, an element has been activated.
 function activate(el) {
   if (el.tagName == 'A') {
@@ -229,6 +235,8 @@ function activate(el) {
       gMainFocusedItem = document.activeElement;
       document.body.id = 'options';
       return;
+    case 'open-settings':
+      return openNewTab('src/content/settings.html');
     case 'open-menu-commands':
       gMainFocusedItem = document.activeElement;
       document.body.id = 'menu-commands';
@@ -260,11 +268,7 @@ function activate(el) {
       window.close();
       return;
     case 'backup-import':
-      let url = chrome.runtime.getURL('src/content/backup/import.html');
-      chrome.tabs.create({'active': true, 'url': url});
-      window.close();
-      return;
-
+      return openNewTab('src/content/backup/import.html');
     case 'new-user-script':
       newUserScript(!gTplData.options.useCodeMirror);
       return;
