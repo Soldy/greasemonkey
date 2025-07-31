@@ -5,52 +5,126 @@ of Greasemonkey.
 */
 
 // Private implementation.
-(function() {
+(async function() {
 
-let gIsEnabled = true;
-chrome.storage.local.get('globalEnabled', v => {
-  gIsEnabled = v['globalEnabled'];
-  if ('undefined' == typeof gIsEnabled) gIsEnabled = true;
-  setIcon();
-});
 
-let gGlobalExcludes = [];
-chrome.storage.local.get('globalExcludes', v => {
-  let str = v['globalExcludes'];
-  if ('undefined' != typeof str) {
-    gGlobalExcludes = str.split('\n');
+let opt_val = {};
+
+const opt_default = {
+   'globalEnable':true,
+   'globalExcludes':[],
+   'useCodeMirror':true,
+   'codeMirrorTheme':'default',
+   'codeMirrorKeyMap':'default',
+   'codeMirrorLineNumber':true,
+   'codeMirrorTabSize':2
+};
+
+const opt_list = {
+   'globalEnable':'globalEnable',
+   'globalExcludes':'excludes',
+   'useCodeMirror':'useCodeMirror',
+   'codeMirrorTheme':'codeMirrorTheme',
+   'codeMirrorKeyMap':'codeMirrorKeyMap',
+   'codeMirrorLineNumber':'codeMirrorLineNumber',
+   'codeMirrorTabSize':'codeMirrorTabSize'
+};
+
+const opt_in = {
+    'globalExcludes': function(v){
+        return v.join('/n');
+    }
+};
+
+const opt_out = {
+    'globalExcludes': function(v){
+        return v.split('/n');
+    }
+};
+
+const optionOut = function (key_, val_){
+    if (typeof opt_out[key_] === 'undefined')
+        return val_; 
+    return opt_out[key_](val_);
+};
+
+const optionIn = function (key_, val_){
+    if (typeof opt_out[key_] === 'undefined')
+        return val_; 
+    return opt_in[key_](val_);
+};
+/**
+ * A simplified storage layer for asynchronous operations,
+ * while regarding to the DRY principle.
+ *
+ * @param {string}
+ * @param {any}
+ * @async
+**/
+const chromeGet = async function (key_, default_){
+  return await (new Promise((resolve)=>{
+    chrome.storage.local.get(key_, (v)=> {
+      if (
+        (typeof v === 'undefined') ||
+        (typeof v[key_] === 'undefined')
+      )
+        resolve(default_);
+      resolve(
+        optionOut(key_, v[key_])
+      );
+    });
+  }));
+};
+
+const chromeGets = async function (){
+    const out = {}; 
+    for (let i in opt_list)
+        out[i] = await chromeGet(i, opt_default[i]);
+    return out;
+};
+
+const chromeSets = async function (set_){
+  const new_val = {}
+  for (let i in opt_list){
+      if (typeof set_[opt_list[i]] === 'undefined'){
+          new_val[i] = optionIn(i, opt_val[i]);
+      }else{
+          new_val[i] = optionIn(i, set_[opt_list[i]]);
+      }
+      opt_val[i] = optionOut(i, new_val[i]);
   }
-});
+  chrome.storage.local.set(
+      new_val,
+      logUnhandledError
+  );
+};
 
-let gUseCodeMirror = true;
-chrome.storage.local.get('useCodeMirror', v => {
-  gUseCodeMirror = v['useCodeMirror'];
-  if ('undefined' == typeof gUseCodeMirror) gUseCodeMirror = true;
-});
+
+opt_val = await chromeGets();
 
 function getGlobalEnabled() {
-  return !!gIsEnabled;
+  return !!opt_val.globalEnable;
 }
 window.getGlobalEnabled = getGlobalEnabled;
 
 
 function getGlobalExcludes() {
-  return gGlobalExcludes.slice();
+  return opt_val.globalExcludes.slice();
 }
 window.getGlobalExcludes = getGlobalExcludes;
 
 
 function onEnabledQuery(message, sender, sendResponse) {
-  sendResponse(gIsEnabled);
+  sendResponse(opt_val.globalEnable);
 }
 window.onEnabledQuery = onEnabledQuery;
 
 
 function setGlobalEnabled(enabled) {
-  gIsEnabled = !!enabled;
+  opt_val.globalEnable = !!enabled;
   chrome.runtime.sendMessage({
     'name': 'EnabledChanged',
-    'enabled': gIsEnabled,
+    'enabled': opt_val.globalEnable,
   }, logUnhandledError);
   setIcon();
   chrome.storage.local.set({'globalEnabled': enabled});
@@ -70,7 +144,7 @@ function setIcon() {
     return;
   }
   let iconPath = chrome.extension.getURL('skin/icon.svg');
-  if (gIsEnabled) {
+  if (opt_val.globalEnable) {
     chrome.browserAction.setIcon({'path': iconPath});
   } else {
     let img = document.createElement('img');
@@ -89,7 +163,7 @@ function setIcon() {
 
 
 function toggleGlobalEnabled() {
-  setGlobalEnabled(!gIsEnabled);
+  setGlobalEnabled(!opt_val.globalEnable);
 }
 window.toggleGlobalEnabled = toggleGlobalEnabled;
 
@@ -97,30 +171,22 @@ window.toggleGlobalEnabled = toggleGlobalEnabled;
 
 function onEnabledToggle(message, sender, sendResponse) {
   toggleGlobalEnabled();
-  sendResponse(gIsEnabled);
+  sendResponse(opt_val.globalEnable);
 }
 window.onEnabledToggle = onEnabledToggle;
 
 
 function onOptionsLoad(message, sender, sendResponse) {
-  let options = {
-    'excludes': gGlobalExcludes.join('\n'),
-    'useCodeMirror': gUseCodeMirror,
-  };
+  const options = {};
+  for (let i in opt_val)
+      options[opt_list[i]] = optionIn( i, opt_val[i]);
   sendResponse(options);
 }
 window.onOptionsLoad = onOptionsLoad;
 
 
 function onOptionsSave(message, sender, sendResponse) {
-  chrome.storage.local.set(
-      {
-        'globalExcludes': message.excludes,
-        'useCodeMirror': message.useCodeMirror,
-        },
-      logUnhandledError);
-  gGlobalExcludes = message.excludes.split('\n');
-  gUseCodeMirror = message.useCodeMirror;
+  chromeSets(message);
   sendResponse();
 }
 window.onOptionsSave = onOptionsSave;
