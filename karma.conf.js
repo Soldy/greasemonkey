@@ -1,6 +1,7 @@
 module.exports = function(config) {
   config.set({
    files: [
+      "./third-party/initrc/initrc.js",
       './test/third-party/chai/chai.js',
       './node_modules/sinon-chrome/bundle/sinon-chrome-webextensions.min.js',
       './test/setup.js',
@@ -9,6 +10,7 @@ module.exports = function(config) {
       './third-party/jszip/jszip.min.js',
       './src/**/*.js',
       './test/**/*.test.js',
+      "./third-party/initrc/start.js",
       {'pattern': './skin/**', 'included': false, 'served': true},
     ],
     exclude: [
