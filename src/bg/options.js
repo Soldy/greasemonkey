@@ -4,8 +4,12 @@ This file is responsible for tracking and exposing the global "enabled" state
 of Greasemonkey.
 */
 
+
+window.options_ready = false;
+
 // Private implementation.
-(async function() {
+
+window.initrc.startAdd(async function() {
 
 
 let opt_val = {};
@@ -191,4 +195,5 @@ function onOptionsSave(message, sender, sendResponse) {
 }
 window.onOptionsSave = onOptionsSave;
 
-})();
+window.options_ready = true;
+}, 2);

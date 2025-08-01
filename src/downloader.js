@@ -10,7 +10,7 @@ class DownloadError extends Error {
 
 
 // Private implementation.
-(function() {
+window.initrc.startAdd(async function() {
 
 class Downloader {
   constructor() {
@@ -324,4 +324,4 @@ class ImmediateDownload {
   }
 }
 
-})();
+}, 2);
