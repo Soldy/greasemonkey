@@ -1,4 +1,5 @@
 'use strict';
+window.initrc.startAdd(async function() {
 describe('downloader', () => {
   const fakeReqs = [];
   let fakeXhr = null;
@@ -47,3 +48,4 @@ describe('downloader', () => {
     return result;
   });
 });
+}, 9);
