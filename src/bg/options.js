@@ -18,9 +18,14 @@ const opt_default = {
    'globalEnable':true,
    'globalExcludes':[],
    'useCodeMirror':true,
+   'codeMirrorScreenReaderLabel':false,
    'codeMirrorTheme':'default',
    'codeMirrorKeyMap':'default',
+   'codeMirrorInputStyle':'textarea',
    'codeMirrorLineNumber':true,
+   'codeMirrorAutoCorrect':true,
+   'codeMirrorSpellCheck':false,
+   'codeMirrorLineWrapping':false,
    'codeMirrorTabSize':2
 };
 
@@ -30,7 +35,12 @@ const opt_list = {
    'useCodeMirror':'useCodeMirror',
    'codeMirrorTheme':'codeMirrorTheme',
    'codeMirrorKeyMap':'codeMirrorKeyMap',
+   'codeMirrorInputStyle' : 'codeMirrorInputStyle',
    'codeMirrorLineNumber':'codeMirrorLineNumber',
+   'codeMirrorScreenReaderLabel':'codeMirrorScreenReaderLabel',
+   'codeMirrorAutoCorrect':'codeMirrorAutoCorrect',
+   'codeMirrorSpellCheck':'codeMirrorSpellCheck',
+   'codeMirrorLineWrapping':'codeMirrorLineWrapping',
    'codeMirrorTabSize':'codeMirrorTabSize'
 };
 
