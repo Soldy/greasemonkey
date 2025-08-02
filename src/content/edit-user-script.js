@@ -160,11 +160,17 @@ let createDoc;
         editorElem,
         // TODO: Make appropriate options user-configurable.
         {
-          'tabSize'     : options.codeMirrorTabSize,
-          'lineNumbers' : options.codeMirrorLineNumber,
-          'extraKeys'   : isMacKeymap ? macKeymap : pcKeymap,
-          'theme'       : options.codeMirrorTheme,
-          'keyMap'      : options.codeMirrorKeyMap
+          'tabSize'           : options.codeMirrorTabSize,
+          'lineNumbers'       : options.codeMirrorLineNumber,
+          'extraKeys'         : isMacKeymap ? macKeymap : pcKeymap,
+          'theme'             : options.codeMirrorTheme,
+          'keyMap'            : options.codeMirrorKeyMap,
+          'inputStyle'        : options.codeMirrorInputStyle,
+          'screenReaderLabel' : options.codeMirrorScreenReaderLabel,
+          'autocorrect'       : options.codeMirrorAutoCorrect,
+          'autocapitalize'    : options.codeMirrorAutoCapitalize,
+          'spellcheck'        : options.codeMirrorSpellCheck,
+          'lineWrapping'      : options.codeMirrorLineWrapping
         });
 
     CodeMirror.commands.save = onSave;

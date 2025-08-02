@@ -24,6 +24,7 @@ const opt_default = {
    'codeMirrorInputStyle':'textarea',
    'codeMirrorLineNumber':true,
    'codeMirrorAutoCorrect':true,
+   'codeMirrorAutoCapitalize':false,
    'codeMirrorSpellCheck':false,
    'codeMirrorLineWrapping':false,
    'codeMirrorTabSize':2
@@ -39,6 +40,7 @@ const opt_list = {
    'codeMirrorLineNumber':'codeMirrorLineNumber',
    'codeMirrorScreenReaderLabel':'codeMirrorScreenReaderLabel',
    'codeMirrorAutoCorrect':'codeMirrorAutoCorrect',
+   'codeMirrorAutoCapitalize':'codeMirrorAutoCapitalize',
    'codeMirrorSpellCheck':'codeMirrorSpellCheck',
    'codeMirrorLineWrapping':'codeMirrorLineWrapping',
    'codeMirrorTabSize':'codeMirrorTabSize'

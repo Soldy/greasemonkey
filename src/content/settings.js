@@ -22,7 +22,10 @@ window.onload=async function(){
              const msg = {
                'name' : 'OptionsSave'
              };
-             msg[id] =  e.target.value;
+             if(typeof e.target.checked !== 'undefined'){
+                msg[id] =  e.target.checked;
+             } else
+                msg[id] =  e.target.value;
              chrome.runtime.sendMessage(
                msg,
                logUnhandledError
@@ -124,8 +127,12 @@ window.onload=async function(){
       'codeMirrorSpellCheck'
     );
     addCheckbox(
-      'CodeMirror autocorrect',
+      'CodeMirror auto correct',
       'codeMirrorAutoCorrect'
+    );
+    addCheckbox(
+      'CodeMirror auto capitalize',
+      'codeMirrorAutoCapitalize'
     );
     document.getElementsByTagName('body')[0].appendChild(
       hellForm.render()
