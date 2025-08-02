@@ -75,6 +75,10 @@ window.onload=async function(){
           options[id_]
         );
     };
+    addCheckbox(
+      'Simple editor spell check',
+      'simpleEditorSpellCheck'
+    );
 
     addSelect(
       'CodeMirror Key Map',

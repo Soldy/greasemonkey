@@ -17,6 +17,7 @@ let opt_val = {};
 const opt_default = {
    'globalEnable':true,
    'globalExcludes':[],
+   'simpleEditorSpellCheck':false,
    'useCodeMirror':true,
    'codeMirrorScreenReaderLabel':false,
    'codeMirrorTheme':'default',
@@ -33,6 +34,7 @@ const opt_default = {
 const opt_list = {
    'globalEnable':'globalEnable',
    'globalExcludes':'excludes',
+   'simpleEditorSpellCheck':'simpleEditorSpellCheck',
    'useCodeMirror':'useCodeMirror',
    'codeMirrorTheme':'codeMirrorTheme',
    'codeMirrorKeyMap':'codeMirrorKeyMap',
