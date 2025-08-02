@@ -48,7 +48,9 @@ const opt_list = {
 
 const opt_in = {
     'globalExcludes': function(v){
-        return v.join('/n');
+        if(Array.isArray(v))
+           return v.join('/n');
+        return '';
     }
 };
 
