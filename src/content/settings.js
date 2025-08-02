@@ -1,6 +1,3 @@
-/**
- * @type {HellForm}
-**/
 window.onload=async function(){
 
     const options = await browser.runtime.sendMessage({'name': 'OptionsLoad'});
@@ -12,30 +9,43 @@ window.onload=async function(){
     /**
      *
      * @param {string}
+     * @return {function}
+    **/
+    const sendMessage = function(id_){
+         const id = id_;
+         /**
+          *
+          * @param {Object.}
+          * @return {void}
+         **/
+         return (e)=>{
+             const msg = {
+               'name' : 'OptionsSave'
+             };
+             msg[id] =  e.target.value;
+             chrome.runtime.sendMessage(
+               msg,
+               logUnhandledError
+             );
+         };
+     };
+
+    /**
+     *
+     * @param {string}
      * @param {string}
      * @param {Object.<string, string>}
-     * @param {function}
     **/
     const addSelect = function(
       label_,
       id_,
       list_
     ){
-        const id = id_;
         hellForm.addSelect(
           _(label_),
           id_,
           list_,
-          (e)=>{
-               const msg = {
-                  'name' : 'OptionsSave'
-               };
-               msg[id] =  e.target.value;
-               chrome.runtime.sendMessage(
-                 msg,
-                 logUnhandledError
-               );
-            }
+          sendMessage(id_)
         );
         hellForm.set(
           id_,
@@ -47,27 +57,15 @@ window.onload=async function(){
      *
      * @param {string}
      * @param {string}
-     * @param {Object.<string, string>}
-     * @param {function}
     **/
     const addCheckbox = function(
       label_,
       id_
     ){
-        const id = id_;
         hellForm.addCheckbox(
           _(label_),
           id_,
-          (e)=>{
-               const msg = {
-                  'name' : 'OptionsSave'
-               };
-               msg[id] =  e.target.checked;
-               chrome.runtime.sendMessage(
-                 msg,
-                 logUnhandledError
-               );
-            }
+          sendMessage(id_)
         );
         hellForm.set(
           id_,

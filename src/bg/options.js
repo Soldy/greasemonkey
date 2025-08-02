@@ -58,15 +58,16 @@ const opt_out = {
 
 const optionOut = function (key_, val_){
     if (typeof opt_out[key_] === 'undefined')
-        return val_; 
+        return val_;
     return opt_out[key_](val_);
 };
 
 const optionIn = function (key_, val_){
     if (typeof opt_out[key_] === 'undefined')
-        return val_; 
+        return val_;
     return opt_in[key_](val_);
 };
+
 /**
  * A simplified storage layer for asynchronous operations,
  * while regarding to the DRY principle.
