@@ -79,7 +79,10 @@ window.onload=async function(){
       'Simple editor spell check',
       'simpleEditorSpellCheck'
     );
-
+    addCheckbox(
+      'code mirror',
+      'useCodeMirror'
+    );
     addSelect(
       'CodeMirror Key Map',
       'codeMirrorKeyMap',
