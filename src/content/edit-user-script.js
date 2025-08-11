@@ -123,8 +123,10 @@ document.querySelector('#modal footer button')
 ///////////////////////////////////////////////////////////////////////////////
 
 function addRequireTab(url, content) {
-  if (!url) return console.error('addRequireTab: missing URL!');
-  if (!content) return console.error('addRequireTab: missing content!');
+  if (!url)
+     return console.error('addRequireTab: missing URL!');
+  if (!content)
+     return console.error('addRequireTab: missing content!');
   let requireTab = document.createElement('li');
   requireTab.className = 'tab require';
   requireTab.textContent = nameForUrl(url);
@@ -156,7 +158,7 @@ let createDoc;
 (async function() {
   let options = await browser.runtime.sendMessage({'name': 'OptionsLoad'});
   const editorElem = document.getElementById('editor');
-  if (options.useCodeMirror) {
+  if (codeEditor === 'cm5') {
     const macKeymap = CodeMirror.normalizeKeyMap({
       'Cmd-/': 'toggleComment',
     });

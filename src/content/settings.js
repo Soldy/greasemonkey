@@ -79,9 +79,13 @@ window.onload=async function(){
       'Simple editor spell check',
       'simpleEditorSpellCheck'
     );
-    addCheckbox(
-      'code mirror',
-      'useCodeMirror'
+    addSelect(
+      'code editor',
+      'codeEditor',
+      {
+        'simple' : 'Simple Editor',
+        'cm5' : 'Code Mirror 5',
+      }
     );
     addSelect(
       'CodeMirror Key Map',

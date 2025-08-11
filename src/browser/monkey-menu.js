@@ -5,7 +5,6 @@ let gTplData = {
   'pendingUninstall': 0,
   'options': {
     'globalExcludesStr': '',
-    'useCodeMirror': true,
   },
   'menuCommands': [],
   'originGlob': null,
@@ -154,7 +153,6 @@ function onLoad() {
       {'name': 'OptionsLoad'},
       options => {
         gTplData.options.globalExcludesStr = options.excludes;
-        gTplData.options.useCodeMirror = options.useCodeMirror;
         finish();
       });
 
@@ -270,7 +268,7 @@ function activate(el) {
     case 'backup-import':
       return openNewTab('src/content/backup/import.html');
     case 'new-user-script':
-      newUserScript(!gTplData.options.useCodeMirror);
+      newUserScript();
       return;
     case 'toggle-global-enabled':
       browser.runtime.sendMessage({'name': 'EnabledToggle'})
@@ -367,8 +365,7 @@ function navigateAway() {
     case 'options':
       chrome.runtime.sendMessage({
         'name': 'OptionsSave',
-        'excludes': gTplData.options.globalExcludesStr.trim(),
-        'useCodeMirror': gTplData.options.useCodeMirror,
+        'excludes': gTplData.options.globalExcludesStr.trim()
       }, logUnhandledError);
       break;
     case 'user-script-options':
